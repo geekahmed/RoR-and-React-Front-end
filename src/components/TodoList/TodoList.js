@@ -37,6 +37,7 @@ export default class TodoList extends Component {
           Task and Description
         </div>
         {taskData}
+        
         <Button color="danger" onClick={clearList}>
           Clear all
         </Button>

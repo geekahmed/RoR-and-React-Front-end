@@ -4,10 +4,13 @@ import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import {ActionCableProvider} from 'react-actioncable-provider';
 
 ReactDOM.render(
   <React.StrictMode>
+    <ActionCableProvider url='ws://localhost:5000/cable'>
     <App />
+    </ActionCableProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );

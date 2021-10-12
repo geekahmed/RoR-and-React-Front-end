@@ -6,6 +6,9 @@ import TodoList from "../TodoList/TodoList";
 import "./style.css";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import EditTodo from "../EditTodo/EditTodo";
+import { ActionCableConsumer } from "react-actioncable-provider";
+import ActionCable from 'actioncable';
+
 const theme = createMuiTheme({
   palette: {
     primary: {
@@ -56,7 +59,8 @@ export default class InputItem extends Component {
         if (result.status === 201) {
           
           this.setState({ successAlertMsg: "Added" }, () =>
-            this.getTaskData()
+            // this.getTaskData()
+            console.log("pass")
           );
           setTimeout(() => {
             this.setState({ successAlertMsg: "" });
@@ -88,7 +92,6 @@ export default class InputItem extends Component {
     fetch("http://localhost:5000/todo", requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        console.log(result)
         if (result) {
           this.setState({
             showTaskData: result,
@@ -102,7 +105,6 @@ export default class InputItem extends Component {
   onChangehandler = (e) => {
     const { taskData } = this.state;
     taskData[e.target.name] = e.target.value;
-    console.log((taskData[e.target.name] = e.target.value));
     this.setState({ taskData });
   };
   clearList = () => {
@@ -157,11 +159,47 @@ export default class InputItem extends Component {
     });
   };
 
+  handleReceivedTodo = response => {
+    if (response.data) {
+      console.log(response.data)
+      this.setState({
+        showTaskData: [...this.state.showTaskData, response.data],
+      });
+      
+    }
+    if (response.csv_url){
+      console.log(response.csv_url)
+    }
+  }
+
+  exportCSV = response => {
+    console.log(response.csv_url)
+  };
+
+  exportCSVTrigger = () => {
+    let token = sessionStorage.getItem("token");
+    var requestOptions = {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+    };
+    fetch(
+      "http://localhost:5000/export",
+      requestOptions
+    )
+      .then((response) => response)
+      .then((result) => {
+        if (result.status === 204) {
+          console.log("Fetching Data");
+        }
+      });
+  };
   updateTodo = () => {
     let { id, title, description } = this.state.editTaskData;
     let token = sessionStorage.getItem("token");
-   
-    
 
     var requestOptions = {
       method: "PATCH",
@@ -234,10 +272,18 @@ export default class InputItem extends Component {
             >
               +
             </Button>
+            <Button
+              className="font-weight-bold"
+              onClick={this.exportCSVTrigger}
+            >
+              Export
+            </Button>
           </ThemeProvider>
         </div>
         <div class="text-success p-4 mt-2">{this.state.successAlertMsg}</div>
         {/*TODO list  */}
+       <ActionCableConsumer channel={{channel: 'TodoUnitsChannel'}} onReceived = {this.handleReceivedTodo}/>
+        {/*<ActionCableConsumer channel={{channel: 'ExportChannel'}} onReceived = {this.exportCSV}/>*/}
         <TodoList
           showTaskData={this.state.showTaskData}
           clearList={this.clearList}

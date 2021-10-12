@@ -11,14 +11,16 @@ export default class Header extends Component {
 
   todoLogout = () => {
     let token = sessionStorage.getItem("token");
-    var myHeaders = new Headers();
-    myHeaders.append("Authorization", `Bearer ${token}`);
 
     var requestOptions = {
       method: "GET",
-      headers: myHeaders,
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
     };
-    fetch("https://todo.programmingfields.com/api/user/logout", requestOptions)
+    fetch("http://localhost:5000/logout", requestOptions)
       .then((response) => response.json())
       .then((result) => {
         if (result.status === "success") {
